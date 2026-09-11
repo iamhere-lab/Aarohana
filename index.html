@@ -10,6 +10,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- MSG91 OTP Widget -->
+  <script src="https://verify.msg91.com/otp-provider.js"></script>
   <!-- Google Fonts: Italiana, Cormorant Garamond, Space Grotesk, Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -249,7 +251,7 @@
     <!-- Floating Enquiry Bar -->
     <div class="relative z-20 max-w-7xl mx-auto px-6 sm:px-10 w-full mt-8">
       <div class="glass-obsidian p-4 sm:p-6 shadow-2xl border border-champagne/30">
-        <form onsubmit="handleHeroInquiry(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+        <form id="heroForm" onsubmit="submitLead(event, 'hero')" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
           
           <div class="px-3 border-b sm:border-b-0 sm:border-r border-champagne/15 py-1">
             <label for="heroName" class="text-[9px] uppercase tracking-architectural text-champagne font-mono block">Name</label>
@@ -258,7 +260,7 @@
 
           <div class="px-3 border-b sm:border-b-0 sm:border-r border-champagne/15 py-1">
             <label for="heroPhone" class="text-[9px] uppercase tracking-architectural text-champagne font-mono block">Phone</label>
-            <input type="tel" id="heroPhone" name="phone" required pattern="[0-9+ ]{10,15}" placeholder="+91 XXXXX XXXXX" class="bg-transparent text-xs text-sandstone focus:outline-none w-full mt-1 font-sans placeholder:text-sandstone/30" />
+            <input type="tel" id="heroPhone" name="phone" required inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" oninput="onPhoneChange('hero')" class="bg-transparent text-xs text-sandstone focus:outline-none w-full mt-1 font-sans placeholder:text-sandstone/30" />
           </div>
 
           <div class="px-3 border-b sm:border-b-0 sm:border-r border-champagne/15 py-1">
@@ -271,11 +273,22 @@
           </div>
 
           <div class="px-2">
-            <button type="submit" class="w-full py-4 bg-champagne hover:bg-champagne-light text-obsidian-deep text-[10px] uppercase tracking-architectural font-mono font-bold transition-all shadow-lg flex items-center justify-center gap-2">
-              <span>Submit</span>
+            <button type="submit" id="heroSubmitBtn" class="w-full py-4 bg-champagne hover:bg-champagne-light disabled:opacity-50 disabled:cursor-not-allowed text-obsidian-deep text-[10px] uppercase tracking-architectural font-mono font-bold transition-all shadow-lg flex items-center justify-center gap-2">
+              <span id="heroSubmitLabel">Submit</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
           </div>
+
+          <!-- Inline OTP step (appears after first Submit) -->
+          <div id="heroOtpRow" class="hidden sm:col-span-2 lg:col-span-4 border-t border-champagne/15 pt-4 mt-1">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+              <label for="heroOtp" class="text-[9px] uppercase tracking-architectural text-champagne font-mono whitespace-nowrap">Enter OTP sent to your mobile</label>
+              <input type="text" id="heroOtp" inputmode="numeric" maxlength="6" placeholder="4–6 digit OTP" class="px-4 py-2.5 bg-obsidian-surface border border-champagne/30 text-sandstone text-xs tracking-[0.4em] focus:outline-none focus:border-champagne font-mono placeholder:tracking-normal placeholder:text-sandstone/30 sm:w-44" />
+              <button type="button" onclick="uiSendOtp('hero')" id="heroResendBtn" class="text-[9px] font-mono uppercase tracking-spacious text-champagne hover:underline disabled:opacity-40 text-left" disabled>Resend OTP</button>
+              <span id="heroVerifiedRow" class="hidden items-center gap-2 text-[10px] font-mono text-champagne"><i data-lucide="badge-check" class="w-4 h-4"></i>Verified</span>
+            </div>
+          </div>
+          <p id="heroError" class="hidden sm:col-span-2 lg:col-span-4 text-[10px] font-mono text-red-400 px-3"></p>
 
         </form>
       </div>
@@ -1076,7 +1089,7 @@
         Share your details and our team will call you back with pricing, returns and a site visit slot at Aarohana Premium Resorts.
       </p>
 
-      <form id="leadForm" onsubmit="submitLead(event)" class="space-y-4" novalidate>
+      <form id="leadForm" onsubmit="submitLead(event, 'lead')" class="space-y-4" novalidate>
         <div>
           <label for="leadName" class="block text-[9px] uppercase tracking-spacious text-champagne font-mono mb-1.5">Name</label>
           <input type="text" id="leadName" name="name" required placeholder="Your full name" autocomplete="name" class="w-full px-4 py-3 bg-obsidian-surface border border-champagne/30 text-sandstone text-xs focus:outline-none focus:border-champagne font-sans placeholder:text-sandstone/30" />
@@ -1085,8 +1098,8 @@
         <div>
           <label for="leadPhone" class="block text-[9px] uppercase tracking-spacious text-champagne font-mono mb-1.5">Phone</label>
           <div class="flex gap-2">
-            <input type="tel" id="leadPhone" name="phone" required inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel" oninput="onPhoneChange()" class="flex-1 px-4 py-3 bg-obsidian-surface border border-champagne/30 text-sandstone text-xs focus:outline-none focus:border-champagne font-sans placeholder:text-sandstone/30" />
-            <button type="button" id="sendOtpBtn" onclick="sendOtp()" class="px-4 py-3 border border-champagne text-champagne hover:bg-champagne hover:text-obsidian disabled:opacity-50 font-mono text-[9px] uppercase tracking-spacious font-bold transition-all whitespace-nowrap">Send OTP</button>
+            <input type="tel" id="leadPhone" name="phone" required inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel" oninput="onPhoneChange('lead')" class="flex-1 px-4 py-3 bg-obsidian-surface border border-champagne/30 text-sandstone text-xs focus:outline-none focus:border-champagne font-sans placeholder:text-sandstone/30" />
+            <button type="button" id="sendOtpBtn" onclick="uiSendOtp('lead')" class="px-4 py-3 border border-champagne text-champagne hover:bg-champagne hover:text-obsidian disabled:opacity-50 font-mono text-[9px] uppercase tracking-spacious font-bold transition-all whitespace-nowrap">Send OTP</button>
           </div>
         </div>
 
@@ -1094,7 +1107,7 @@
           <label for="leadOtp" class="block text-[9px] uppercase tracking-spacious text-champagne font-mono mb-1.5">Enter OTP</label>
           <div class="flex gap-2">
             <input type="text" id="leadOtp" inputmode="numeric" maxlength="6" placeholder="4–6 digit OTP" class="flex-1 px-4 py-3 bg-obsidian-surface border border-champagne/30 text-sandstone text-xs tracking-[0.4em] focus:outline-none focus:border-champagne font-mono placeholder:tracking-normal placeholder:text-sandstone/30" />
-            <button type="button" id="verifyOtpBtn" onclick="verifyOtp()" class="px-4 py-3 bg-champagne text-obsidian hover:bg-champagne-light disabled:opacity-50 font-mono text-[9px] uppercase tracking-spacious font-bold transition-all whitespace-nowrap">Verify</button>
+            <button type="button" id="verifyOtpBtn" onclick="uiVerifyOtp('lead')" class="px-4 py-3 bg-champagne text-obsidian hover:bg-champagne-light disabled:opacity-50 font-mono text-[9px] uppercase tracking-spacious font-bold transition-all whitespace-nowrap">Verify</button>
           </div>
           <p class="text-[9px] font-mono text-sandstone/50 mt-1.5">OTP sent to your mobile. Didn't get it? Use "Resend" above after 30s.</p>
         </div>
@@ -1149,9 +1162,14 @@
     // =====================================================================
     const CONFIG = {
       // Google Apps Script Web App URL (deploy apps-script.gs → "Anyone" access)
-      SCRIPT_URL: 'https://script.google.com/macros/s/PASTE_YOUR_DEPLOYMENT_ID/exec',
+      SCRIPT_URL: 'https://script.google.com/macros/s/AKfycby1T746hcUu2e1T6OZ8yTQnYWBF2FfOZbKJv6LAg8c6TFyoWH-GUhNBMt5Sl2BWDqzmVg/exec',
       // Set false to allow submissions without OTP (e.g. while testing MSG91)
       ENABLE_OTP: true,
+      // OTP provider: 'widget' = MSG91 OTP Widget (client-side, uses widgetId + tokenAuth below)
+      //               'proxy'  = Apps Script proxy using MSG91 authkey (server-side)
+      OTP_PROVIDER: 'widget',
+      MSG91_WIDGET_ID: '36696b684b51393238323231',
+      MSG91_TOKEN_AUTH: '563888Tl2xSgNY6aa3bde5P1',
       // Project name written to the "Project" column in Google Sheets
       PROJECT_NAME: 'Aarohana Premium Resorts',
       // Where to send the user after a successful submission
@@ -1235,131 +1253,214 @@
       }
     }, CONFIG.POPUP_DELAY_MS);
 
-    // Hero inline form → prefill popup and continue there (single OTP flow)
-    function handleHeroInquiry(e) {
-      e.preventDefault();
-      const name = document.getElementById('heroName').value.trim();
-      const phone = document.getElementById('heroPhone').value.replace(/\D/g, '').slice(-10);
-      const project = document.getElementById('heroProject').value;
-      openPopup('hero-form');
-      document.getElementById('leadName').value = name;
-      document.getElementById('leadPhone').value = phone;
-      document.getElementById('leadProject').value = project;
-      onPhoneChange();
-      if (CONFIG.ENABLE_OTP && phone.length === 10) sendOtp();
+    // ---------------------------------------------------------------------
+    // Forms: 'hero' (inline bar) and 'lead' (popup) share one OTP + submit flow
+    // ---------------------------------------------------------------------
+    const FORMS = {
+      hero: {
+        name: 'heroName', phone: 'heroPhone', project: 'heroProject',
+        otpRow: 'heroOtpRow', otp: 'heroOtp', verifiedRow: 'heroVerifiedRow',
+        submitBtn: 'heroSubmitBtn', submitLabel: 'heroSubmitLabel', error: 'heroError',
+        sendBtn: 'heroResendBtn', verifyBtn: null,
+        source: () => 'hero-form', villa: () => ''
+      },
+      lead: {
+        name: 'leadName', phone: 'leadPhone', project: 'leadProject',
+        otpRow: 'otpRow', otp: 'leadOtp', verifiedRow: 'otpVerifiedRow',
+        submitBtn: 'leadSubmitBtn', submitLabel: null, error: 'leadError',
+        sendBtn: 'sendOtpBtn', verifyBtn: 'verifyOtpBtn',
+        source: () => document.getElementById('leadSource').value,
+        villa: () => document.getElementById('leadVillaRef').value
+      }
+    };
+    const otpState = { hero: { sentTo: '', verified: false, token: '' }, lead: { sentTo: '', verified: false, token: '' } };
+    const $ = id => document.getElementById(id);
+
+    let widgetReady = false;
+    function initMsg91Widget() {
+      if (widgetReady || CONFIG.OTP_PROVIDER !== 'widget') return;
+      if (typeof initSendOTP !== 'function') { console.warn('[NFS] MSG91 widget script not loaded yet'); return; }
+      initSendOTP({
+        widgetId: CONFIG.MSG91_WIDGET_ID,
+        tokenAuth: CONFIG.MSG91_TOKEN_AUTH,
+        exposeMethods: true,          // exposes window.sendOtp / window.verifyOtp / window.retryOtp
+        success: () => {},
+        failure: () => {}
+      });
+      widgetReady = true;
+    }
+    window.addEventListener('load', initMsg91Widget);
+
+    function getPhone(ctx) {
+      return $(FORMS[ctx].phone).value.replace(/\D/g, '').slice(-10);
     }
 
-    // ---------------------------------------------------------------------
-    // OTP (MSG91 via Apps Script proxy — auth key never leaves the server)
-    // ---------------------------------------------------------------------
-    let otpVerified = false;
-    let otpSentTo = '';
-
-    function getPhone() {
-      return document.getElementById('leadPhone').value.replace(/\D/g, '').slice(-10);
-    }
-
-    function setError(msg) {
-      const el = document.getElementById('leadError');
+    function setError(ctx, msg) {
+      const el = $(FORMS[ctx].error);
       if (!msg) { el.classList.add('hidden'); el.innerText = ''; return; }
       el.innerText = msg; el.classList.remove('hidden');
     }
 
-    function onPhoneChange() {
-      // If the number changes after verification, require re-verification
-      if (otpVerified && getPhone() !== otpSentTo) {
-        otpVerified = false;
-        document.getElementById('otpVerifiedRow').classList.add('hidden');
-        document.getElementById('otpVerifiedRow').classList.remove('flex');
-        document.getElementById('otpRow').classList.add('hidden');
-        document.getElementById('sendOtpBtn').classList.remove('hidden');
+    function setSubmitLabel(ctx, text) {
+      const f = FORMS[ctx];
+      if (f.submitLabel) $(f.submitLabel).innerText = text; else $(f.submitBtn).innerText = text;
+    }
+
+    function markVerified(ctx) {
+      const f = FORMS[ctx];
+      $(f.otpRow).classList.add('hidden');
+      if (f.sendBtn && ctx === 'lead') $(f.sendBtn).classList.add('hidden');
+      const v = $(f.verifiedRow); v.classList.remove('hidden'); v.classList.add('flex');
+      setSubmitLabel(ctx, 'Submit');
+      lucide.createIcons();
+    }
+
+    function onPhoneChange(ctx) {
+      const st = otpState[ctx], f = FORMS[ctx];
+      if ((st.verified || st.sentTo) && getPhone(ctx) !== st.sentTo) {
+        st.verified = false; st.sentTo = ''; st.token = '';
+        $(f.verifiedRow).classList.add('hidden'); $(f.verifiedRow).classList.remove('flex');
+        $(f.otpRow).classList.add('hidden');
+        if (f.sendBtn && ctx === 'lead') { $(f.sendBtn).classList.remove('hidden'); $(f.sendBtn).disabled = false; $(f.sendBtn).innerText = 'Send OTP'; }
+        setSubmitLabel(ctx, 'Submit');
       }
-      setError('');
+      setError(ctx, '');
     }
 
     async function apiCall(payload) {
+      if (!CONFIG.SCRIPT_URL || CONFIG.SCRIPT_URL.includes('PASTE_YOUR_DEPLOYMENT_ID')) {
+        throw new Error('CONFIG.SCRIPT_URL is not set — paste your Apps Script Web App URL.');
+      }
       // No custom headers → "simple" request → no CORS preflight; Apps Script returns readable JSON
       const res = await fetch(CONFIG.SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-      return res.json();
-    }
-
-    async function sendOtp() {
-      const phone = getPhone();
-      if (phone.length !== 10) { setError('Enter a valid 10-digit mobile number.'); return; }
-      const btn = document.getElementById('sendOtpBtn');
-      btn.disabled = true; btn.innerText = 'Sending…';
-      setError('');
+      const text = await res.text();
       try {
-        const r = await apiCall({ action: 'send_otp', phone });
-        if (r.status === 'ok') {
-          otpSentTo = phone;
-          document.getElementById('otpRow').classList.remove('hidden');
-          document.getElementById('leadOtp').value = '';
-          document.getElementById('leadOtp').focus();
-          btn.innerText = 'OTP Sent';
-          setTimeout(() => { btn.disabled = false; btn.innerText = 'Resend'; }, 30000);
-        } else {
-          throw new Error(r.message || 'Could not send OTP');
-        }
-      } catch (err) {
-        setError('Could not send OTP. Please check the number and try again.');
-        btn.disabled = false; btn.innerText = 'Send OTP';
+        return JSON.parse(text);
+      } catch (e) {
+        console.error('[NFS] Non-JSON response from Apps Script:', text.slice(0, 300));
+        throw new Error('Apps Script returned HTML instead of JSON. Re-deploy with "Who has access: Anyone".');
       }
     }
 
-    async function verifyOtp() {
-      const otp = document.getElementById('leadOtp').value.trim();
-      if (otp.length < 4) { setError('Enter the OTP you received.'); return; }
-      const btn = document.getElementById('verifyOtpBtn');
-      btn.disabled = true; btn.innerText = 'Verifying…';
-      setError('');
-      try {
-        const r = await apiCall({ action: 'verify_otp', phone: otpSentTo, otp });
-        if (r.status === 'ok') {
-          otpVerified = true;
-          document.getElementById('otpRow').classList.add('hidden');
-          document.getElementById('sendOtpBtn').classList.add('hidden');
-          const v = document.getElementById('otpVerifiedRow');
-          v.classList.remove('hidden'); v.classList.add('flex');
-          lucide.createIcons();
-        } else {
-          throw new Error(r.message || 'Invalid OTP');
-        }
-      } catch (err) {
-        setError('Incorrect or expired OTP. Please try again.');
-      }
-      btn.disabled = false; btn.innerText = 'Verify';
+    // --- MSG91 widget adapters ----------------------------------------------
+    function widgetSend(phone) {
+      return new Promise((resolve, reject) => {
+        initMsg91Widget();
+        if (typeof window.sendOtp !== 'function') return reject(new Error('MSG91 widget not ready (script blocked or not loaded). Refresh and try again.'));
+        window.sendOtp('91' + phone, data => resolve(data), err => reject(new Error(msg91ErrorText(err))));
+      });
+    }
+    function widgetVerify(otp) {
+      return new Promise((resolve, reject) => {
+        if (typeof window.verifyOtp !== 'function') return reject(new Error('MSG91 widget not ready.'));
+        window.verifyOtp(otp, data => resolve(data), err => reject(new Error(msg91ErrorText(err))));
+      });
+    }
+    function msg91ErrorText(err) {
+      if (!err) return 'MSG91 error';
+      if (typeof err === 'string') return err;
+      return err.message || err.msg || (err.data && err.data.message) || JSON.stringify(err).slice(0, 160);
     }
 
-    // ---------------------------------------------------------------------
-    // Submit lead → Google Sheets (Apps Script) → thank-you.html
-    // ---------------------------------------------------------------------
-    async function submitLead(e) {
+    // --- Send OTP -------------------------------------------------------------
+    async function uiSendOtp(ctx) {
+      const f = FORMS[ctx], st = otpState[ctx];
+      const phone = getPhone(ctx);
+      if (phone.length !== 10) { setError(ctx, 'Enter a valid 10-digit mobile number.'); return false; }
+      const btn = f.sendBtn ? $(f.sendBtn) : null;
+      if (btn) { btn.disabled = true; if (ctx === 'lead') btn.innerText = 'Sending…'; }
+      setError(ctx, '');
+      try {
+        if (CONFIG.OTP_PROVIDER === 'widget') {
+          await widgetSend(phone);
+        } else {
+          const r = await apiCall({ action: 'send_otp', phone });
+          if (r.status !== 'ok') throw new Error(r.message || 'Could not send OTP');
+        }
+        st.sentTo = phone; st.verified = false; st.token = '';
+        $(f.otpRow).classList.remove('hidden');
+        $(f.otp).value = ''; $(f.otp).focus();
+        setSubmitLabel(ctx, 'Verify & Submit');
+        if (btn) { if (ctx === 'lead') btn.innerText = 'OTP Sent'; setTimeout(() => { btn.disabled = false; if (ctx === 'lead') btn.innerText = 'Resend'; }, 30000); }
+        return true;
+      } catch (err) {
+        console.error('[NFS] sendOtp failed:', err);
+        setError(ctx, 'Could not send OTP — ' + (err.message || 'unknown error'));
+        if (btn) { btn.disabled = false; if (ctx === 'lead') btn.innerText = 'Send OTP'; }
+        return false;
+      }
+    }
+
+    // --- Verify OTP -----------------------------------------------------------
+    async function uiVerifyOtp(ctx) {
+      const f = FORMS[ctx], st = otpState[ctx];
+      const otp = $(f.otp).value.trim();
+      if (otp.length < 4) { setError(ctx, 'Enter the OTP you received.'); return false; }
+      const btn = f.verifyBtn ? $(f.verifyBtn) : null;
+      if (btn) { btn.disabled = true; btn.innerText = 'Verifying…'; }
+      setError(ctx, '');
+      try {
+        if (CONFIG.OTP_PROVIDER === 'widget') {
+          const data = await widgetVerify(otp);
+          st.token = (data && (data.message || data.token)) || '';
+        } else {
+          const r = await apiCall({ action: 'verify_otp', phone: st.sentTo, otp });
+          if (r.status !== 'ok') throw new Error(r.message || 'Invalid OTP');
+        }
+        st.verified = true;
+        markVerified(ctx);
+        if (btn) { btn.disabled = false; btn.innerText = 'Verify'; }
+        return true;
+      } catch (err) {
+        console.error('[NFS] verifyOtp failed:', err);
+        setError(ctx, 'OTP verification failed — ' + (err.message || 'incorrect or expired OTP'));
+        if (btn) { btn.disabled = false; btn.innerText = 'Verify'; }
+        return false;
+      }
+    }
+
+    // --- Submit: Submit → (send OTP) → Verify & Submit → save → thank-you ------
+    async function submitLead(e, ctx) {
       e.preventDefault();
-      const name = document.getElementById('leadName').value.trim();
-      const phone = getPhone();
-      const project = document.getElementById('leadProject').value;
+      const f = FORMS[ctx], st = otpState[ctx];
+      const name = $(f.name).value.trim();
+      const phone = getPhone(ctx);
+      const project = $(f.project).value;
 
-      if (!name) { setError('Please enter your name.'); return; }
-      if (phone.length !== 10) { setError('Enter a valid 10-digit mobile number.'); return; }
-      if (CONFIG.ENABLE_OTP && !otpVerified) {
-        setError('Please verify your mobile number with OTP first.');
-        if (!otpSentTo) sendOtp();
-        return;
+      if (!name) { setError(ctx, 'Please enter your name.'); $(f.name).focus(); return; }
+      if (phone.length !== 10) { setError(ctx, 'Enter a valid 10-digit mobile number.'); $(f.phone).focus(); return; }
+
+      const btn = $(f.submitBtn);
+
+      if (CONFIG.ENABLE_OTP && !st.verified) {
+        btn.disabled = true;
+        if (!st.sentTo || st.sentTo !== phone) {
+          // Step 1: send OTP and reveal the OTP field
+          setSubmitLabel(ctx, 'Sending OTP…');
+          const ok = await uiSendOtp(ctx);
+          btn.disabled = false;
+          if (!ok) setSubmitLabel(ctx, 'Submit');
+          return;
+        }
+        // Step 2: verify the entered OTP, then fall through to save
+        setSubmitLabel(ctx, 'Verifying…');
+        const ok = await uiVerifyOtp(ctx);
+        btn.disabled = false;
+        if (!ok) { setSubmitLabel(ctx, 'Verify & Submit'); return; }
       }
 
-      const btn = document.getElementById('leadSubmitBtn');
-      btn.disabled = true; btn.innerText = 'Submitting…';
-      setError('');
+      btn.disabled = true; setSubmitLabel(ctx, 'Submitting…');
+      setError(ctx, '');
 
       const payload = {
         action: 'save_lead',
         name, phone,
         interested_project: project,
-        source: document.getElementById('leadSource').value,
+        source: f.source(),
         project: CONFIG.PROJECT_NAME,
-        villa_reference: document.getElementById('leadVillaRef').value,
-        otp_verified: otpVerified ? 'Yes' : 'No',
+        villa_reference: f.villa(),
+        otp_verified: st.verified ? 'Yes' : 'No',
+        otp_access_token: st.token,
         page_url: location.href,
         landing_url: attribution.landing_url,
         utm_source: attribution.utm_source,
@@ -1375,14 +1476,14 @@
         const r = await apiCall(payload);
         if (r.status !== 'ok') throw new Error(r.message || 'Save failed');
         sessionStorage.setItem('nfs_lead_submitted', '1');
-        // Fire conversion events if tags are present
         if (typeof gtag === 'function') gtag('event', 'generate_lead', { method: payload.source });
         if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: project });
         const q = new URLSearchParams({ name, project, phone });
         location.href = CONFIG.THANK_YOU_URL + '?' + q.toString();
       } catch (err) {
-        setError('Something went wrong. Please try again or call +91 72 889 222 44.');
-        btn.disabled = false; btn.innerText = 'Submit';
+        console.error('[NFS] save failed:', err);
+        setError(ctx, 'Could not save your enquiry — ' + (err.message || 'please try again or call +91 72 889 222 44.'));
+        btn.disabled = false; setSubmitLabel(ctx, 'Submit');
       }
     }
 
