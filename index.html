@@ -133,15 +133,10 @@
     <div class="max-w-7xl mx-auto px-6 sm:px-10 h-20 sm:h-24 flex items-center justify-between">
       
       <!-- Brand Insignia -->
-      <a href="#" class="group flex items-center gap-3.5 focus:outline-none">
-        <div class="w-10 h-10 border border-champagne/40 bg-obsidian-surface flex items-center justify-center relative overflow-hidden group-hover:border-champagne transition-colors">
-          <span class="w-3 h-3 border border-champagne rotate-45 transform group-hover:scale-125 transition-transform duration-500"></span>
-          <span class="absolute inset-0 bg-champagne/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></span>
-        </div>
-        <div class="flex flex-col">
-          <div class="flex items-baseline gap-1.5">
-            <span class="font-display text-xl sm:text-2xl tracking-[0.25em] text-sandstone uppercase font-medium">NFS Properties</span>
-          </div>
+      <a href="#" class="group flex items-center gap-4 focus:outline-none">
+        <img src="assets/aarohana-logo.png" alt="Aarohana Wellness Resort & Convention" class="h-14 sm:h-[72px] w-auto object-contain group-hover:scale-105 transition-transform duration-500" />
+        <div class="hidden md:flex flex-col border-l border-champagne/25 pl-4">
+          <span class="font-display text-base tracking-[0.25em] text-sandstone uppercase">NFS Properties</span>
           <span class="text-[8px] uppercase tracking-monumental text-champagne font-mono mt-0.5">Premium Managed Villas</span>
         </div>
       </a>
@@ -1012,11 +1007,9 @@
       
       <!-- Column 1: Brand & Bio -->
       <div class="lg:col-span-7 space-y-4">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 border border-champagne/40 bg-obsidian-surface flex items-center justify-center">
-            <span class="w-2.5 h-2.5 border border-champagne rotate-45"></span>
-          </div>
-          <span class="font-display text-xl tracking-[0.25em] uppercase text-sandstone">NFS Properties</span>
+        <div class="flex items-center gap-4">
+          <img src="assets/aarohana-logo.png" alt="Aarohana Wellness Resort & Convention" class="h-20 w-auto object-contain" />
+          <span class="font-display text-lg tracking-[0.25em] uppercase text-sandstone border-l border-champagne/25 pl-4">NFS Properties</span>
         </div>
         <p class="text-xs text-sandstone/60 font-light leading-relaxed max-w-md">
           Premium managed villas. Experience a premium villa community where luxury, location, and long-term value come together. Your next investment starts here.
@@ -1070,9 +1063,12 @@
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
 
-      <div class="flex items-center gap-2 mb-5">
-        <span class="w-2 h-2 bg-champagne animate-pulse"></span>
-        <span class="text-[10px] uppercase tracking-spacious text-champagne font-mono font-bold">ENQUIRE NOW</span>
+      <div class="flex items-center justify-between mb-5 pr-8">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 bg-champagne animate-pulse"></span>
+          <span class="text-[10px] uppercase tracking-spacious text-champagne font-mono font-bold">ENQUIRE NOW</span>
+        </div>
+        <img src="assets/aarohana-logo.png" alt="Aarohana" class="h-12 w-auto object-contain" />
       </div>
 
       <h3 class="font-display text-3xl text-sandstone mb-2">Your Next Investment Starts Here.</h3>
@@ -1153,7 +1149,7 @@
     // =====================================================================
     const CONFIG = {
       // Google Apps Script Web App URL (deploy apps-script.gs → "Anyone" access)
-      SCRIPT_URL: 'httpsscript.google.commacrossAKfycby1T746hcUu2e1T6OZ8yTQnYWBF2FfOZbKJv6LAg8c6TFyoWH-GUhNBMt5Sl2BWDqzmVgexec',
+      SCRIPT_URL: 'https://script.google.com/macros/s/AKfycby1T746hcUu2e1T6OZ8yTQnYWBF2FfOZbKJv6LAg8c6TFyoWH-GUhNBMt5Sl2BWDqzmVg/exec',
       // Set false to allow submissions without OTP (e.g. while testing MSG91)
       ENABLE_OTP: true,
       // Project name written to the "Project" column in Google Sheets
